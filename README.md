@@ -34,12 +34,6 @@ cd UniversalFakeDetect
 pip install torch torchvision
 ```
 
-## Pretrained model
-
-- The pretrained weights for the linear probing model can be found here: [link]()
-- Download and save the model in the `checkpoints` folder.
-
-
 ## Data
 
 - Of the 19 models studied overall (Table 1/2 in the main paper), 11 are taken from a [previous work](https://arxiv.org/abs/1912.11035). Download the test set, i.e., real/fake images for those 11 models given by the authors from [here](https://drive.google.com/file/d/1z_fD3UKgWQyOTZIBbYSaQ-hz4AzUrLC1/view) (dataset size ~19GB).
@@ -64,12 +58,12 @@ datasets
  
 - You can evaluate the model on all the dataset at once by running:
 ```bash
-python validate.py  --arch=CLIP:ViT-L/14   --ckpt=checkpoints/model.pth   --result_folder=clip_vitl14 
+python validate.py  --arch=CLIP:ViT-L/14   --ckpt=pretrained_weights/fc_weights.pth   --result_folder=clip_vitl14 
 ```
 
 - You can also evaluate the model on one generative model by specifying the paths of real and fake datasets
 ```bash
-python validate.py  --arch=CLIP:ViT-L/14   --ckpt=checkpoints/model.pth   --result_folder=clip_vitl14  --real_path datasets/test/progan/0_real --fake_path datasets/test/progan/1_fake
+python validate.py  --arch=CLIP:ViT-L/14   --ckpt=pretrained_weights/fc_weights.pth   --result_folder=clip_vitl14  --real_path datasets/test/progan/0_real --fake_path datasets/test/progan/1_fake
 ```
 
 Note that if no arguments are provided for `real_path` and `fake_path`, the script will perform the evaluation on all the domains specified in `dataset_paths.py`.
