@@ -15,7 +15,7 @@ import pickle
 from tqdm import tqdm
 from io import BytesIO
 from copy import deepcopy
-from DATASET_PATHS import DATASET_PATHS
+from dataset_paths import DATASET_PATHS
 import random
 import shutil
 from scipy.ndimage.filters import gaussian_filter
@@ -256,7 +256,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_sample', type=int, default=10000, help='only check this number of images for both fake/real')
 
     parser.add_argument('--arch', type=str, default='res50')
-    parser.add_argument('--ckpt', type=str, default='')
+    parser.add_argument('--ckpt', type=str, default='./pretrained_weights/fc_weights.pth')
 
     parser.add_argument('--result_folder', type=str, default='result', help='')
     parser.add_argument('--batch_size', type=int, default=64)
@@ -274,7 +274,8 @@ if __name__ == '__main__':
 
     model = get_model(opt.arch)
     state_dict = torch.load(opt.ckpt, map_location='cpu')
-    model.load_state_dict(state_dict['model'])
+    model.fc.load_state_dict(state_dict)
+    print ("Model loaded..")
     model.eval()
     model.cuda()
 
