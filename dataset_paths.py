@@ -1,10 +1,6 @@
 DATASET_PATHS = [
 
 
-
-    # = = = = = = = = = = = = = = LDM = = = = = = = = = = = = = = = = #
-
-
     dict(
         real_path='../FAKE_IMAGES/CNN/test/progan',     
         fake_path='../FAKE_IMAGES/CNN/test/progan',
@@ -20,7 +16,7 @@ DATASET_PATHS = [
     ),
 
     dict(
-        real_path='../FAKE_IMAGES/CNN/test/biggan/',   # Imagenet 
+        real_path='../FAKE_IMAGES/CNN/test/biggan/',    
         fake_path='../FAKE_IMAGES/CNN/test/biggan/',
         data_mode='wang2020',
         key='biggan'
@@ -36,7 +32,7 @@ DATASET_PATHS = [
 
 
     dict(
-        real_path='../FAKE_IMAGES/CNN/test/gaugan',    # It is COCO 
+        real_path='../FAKE_IMAGES/CNN/test/gaugan', 
         fake_path='../FAKE_IMAGES/CNN/test/gaugan',
         data_mode='wang2020',
         key='gaugan'
@@ -76,7 +72,7 @@ DATASET_PATHS = [
 
 
     dict(
-        real_path='../FAKE_IMAGES/CNN/test/crn',   # Images from some video games
+        real_path='../FAKE_IMAGES/CNN/test/crn',   
         fake_path='../FAKE_IMAGES/CNN/test/crn',
         data_mode='wang2020',
         key='crn'
@@ -84,7 +80,7 @@ DATASET_PATHS = [
 
 
     dict(
-        real_path='../FAKE_IMAGES/CNN/test/imle',   # Images from some video games
+        real_path='../FAKE_IMAGES/CNN/test/imle',
         fake_path='../FAKE_IMAGES/CNN/test/imle',
         data_mode='wang2020',
         key='imle'
