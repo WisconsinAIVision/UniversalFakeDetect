@@ -8,7 +8,7 @@ import torch.utils.data
 import numpy as np
 from sklearn.metrics import average_precision_score, precision_recall_curve, accuracy_score
 from torch.utils.data import Dataset
-
+import sys
 from models import get_model
 from PIL import Image 
 import pickle
@@ -98,11 +98,13 @@ def validate(model, loader, find_thres=False):
 
     with torch.no_grad():
         y_true, y_pred = [], []
+        print ("Length of dataset: %d" %(len(loader)))
         for img, label in loader:
             in_tens = img.cuda()
 
             y_pred.extend(model(in_tens).sigmoid().flatten().tolist())
             y_true.extend(label.flatten().tolist())
+
     y_true, y_pred = np.array(y_true), np.array(y_pred)
 
     # ================== save this if you want to plot the curves =========== # 
@@ -194,7 +196,6 @@ class RealFakeDataset(Dataset):
 
         stat_from = "imagenet" if arch.lower().startswith("imagenet") else "clip"
         self.transform = transforms.Compose([
-            transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize( mean=MEAN[stat_from], std=STD[stat_from] ),
@@ -230,7 +231,9 @@ class RealFakeDataset(Dataset):
         return len(self.total_list)
 
     def __getitem__(self, idx):
+        
         img_path = self.total_list[idx]
+
         label = self.labels_dict[img_path]
         img = Image.open(img_path).convert("RGB")
 
@@ -253,13 +256,13 @@ if __name__ == '__main__':
     parser.add_argument('--real_path', type=str, default=None, help='dir name or a pickle')
     parser.add_argument('--fake_path', type=str, default=None, help='dir name or a pickle')
     parser.add_argument('--data_mode', type=str, default=None, help='wang2020 or ours')
-    parser.add_argument('--max_sample', type=int, default=10000, help='only check this number of images for both fake/real')
+    parser.add_argument('--max_sample', type=int, default=1000, help='only check this number of images for both fake/real')
 
     parser.add_argument('--arch', type=str, default='res50')
     parser.add_argument('--ckpt', type=str, default='./pretrained_weights/fc_weights.pth')
 
     parser.add_argument('--result_folder', type=str, default='result', help='')
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=128)
 
     parser.add_argument('--jpeg_quality', type=int, default=None, help="100, 90, 80, ... 30. Used to test robustness of our model. Not apply if None")
     parser.add_argument('--gaussian_sigma', type=int, default=None, help="0,1,2,3,4.     Used to test robustness of our model. Not apply if None")
@@ -286,7 +289,7 @@ if __name__ == '__main__':
 
 
 
-    for dataset_path in tqdm(dataset_paths):
+    for dataset_path in (dataset_paths):
         set_seed()
 
         dataset = RealFakeDataset(  dataset_path['real_path'], 
@@ -302,8 +305,8 @@ if __name__ == '__main__':
         ap, r_acc0, f_acc0, acc0, r_acc1, f_acc1, acc1, best_thres = validate(model, loader, find_thres=True)
 
         with open( os.path.join(opt.result_folder,'ap.txt'), 'a') as f:
-            f.write( str(round(ap*100, 2))+'\n' )
+            f.write(dataset_path['key']+': ' + str(round(ap*100, 2))+'\n' )
 
         with open( os.path.join(opt.result_folder,'acc0.txt'), 'a') as f:
-            f.write( str(round(r_acc0*100, 2))+'  '+str(round(f_acc0*100, 2))+'  '+str(round(acc0*100, 2))+'\n' )
+            f.write(dataset_path['key']+': ' + str(round(r_acc0*100, 2))+'  '+str(round(f_acc0*100, 2))+'  '+str(round(acc0*100, 2))+'\n' )
 
