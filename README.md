@@ -51,7 +51,8 @@ datasets
 	  
 ```
 - Each directory (e.g., progan) will contain real/fake images under `0_real` and `1_fake` folders respectively.
-- Dataset for the diffusion models (e.g., LDM/Glide) used in the paper will be released soon.
+- Dataset for the diffusion models (e.g., LDM/Glide) can be found [here](https://drive.google.com/file/d/1FXlGIRh_Ud3cScMgSVDbEWmPDmjcrm1t/view?usp=drive_link). Note that in the paper (Table 2/3), we had reported the results over 10k randomly sampled images. Since providing that many images for all the domains will take up too much space, we are only releasing 1k images for each domain; i.e., 1k images fake images and 1k real images for each domain (e.g., LDM-200).
+- Download and unzip the file into `./diffusion_datasets` directory.
 
 
 ## Evaluation
