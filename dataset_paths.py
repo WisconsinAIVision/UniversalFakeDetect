@@ -16,7 +16,7 @@ DATASET_PATHS = [
     ),
 
     dict(
-        real_path='../FAKE_IMAGES/CNN/test/biggan/',    
+        real_path='../FAKE_IMAGES/CNN/test/biggan/',   # Imagenet 
         fake_path='../FAKE_IMAGES/CNN/test/biggan/',
         data_mode='wang2020',
         key='biggan'
@@ -32,7 +32,7 @@ DATASET_PATHS = [
 
 
     dict(
-        real_path='../FAKE_IMAGES/CNN/test/gaugan', 
+        real_path='../FAKE_IMAGES/CNN/test/gaugan',    # It is COCO 
         fake_path='../FAKE_IMAGES/CNN/test/gaugan',
         data_mode='wang2020',
         key='gaugan'
@@ -72,7 +72,7 @@ DATASET_PATHS = [
 
 
     dict(
-        real_path='../FAKE_IMAGES/CNN/test/crn',   
+        real_path='../FAKE_IMAGES/CNN/test/crn',   # Images from some video games
         fake_path='../FAKE_IMAGES/CNN/test/crn',
         data_mode='wang2020',
         key='crn'
@@ -80,7 +80,7 @@ DATASET_PATHS = [
 
 
     dict(
-        real_path='../FAKE_IMAGES/CNN/test/imle',
+        real_path='../FAKE_IMAGES/CNN/test/imle',   # Images from some video games
         fake_path='../FAKE_IMAGES/CNN/test/imle',
         data_mode='wang2020',
         key='imle'
@@ -88,63 +88,63 @@ DATASET_PATHS = [
     
 
     dict(
-        real_path='../imagenet/val.pickle',
-        fake_path='../FAKE_IMAGES/guided_imagenet_ddim25_cg1/val.pickle',
-        data_mode='ours',
+        real_path='./diffusion_datasets/imagenet',
+        fake_path='./diffusion_datasets/guided',
+        data_mode='wang2020',
         key='guided'
     ),
 
 
     dict(
-        real_path='../laion400m_data/val.pickle',
-        fake_path='../FAKE_IMAGES/ldm_200step/val.pickle',
-        data_mode='ours',
+        real_path='./diffusion_datasets/laion',
+        fake_path='./diffusion_datasets/ldm_200',
+        data_mode='wang2020',
         key='ldm_200'
     ),
 
     dict(
-        real_path='../laion400m_data/val.pickle',
-        fake_path='../FAKE_IMAGES/ldm_200step_cfg3/val.pickle',
-        data_mode='ours',
+        real_path='./diffusion_datasets/laion',
+        fake_path='./diffusion_datasets/ldm_200_cfg',
+        data_mode='wang2020',
         key='ldm_200_cfg'
     ),
 
     dict(
-        real_path='../laion400m_data/val.pickle',
-        fake_path='../FAKE_IMAGES/ldm_100step/val.pickle',
-        data_mode='ours',
+        real_path='./diffusion_datasets/laion',
+        fake_path='./diffusion_datasets/ldm_100',
+        data_mode='wang2020',
         key='ldm_100'
      ),
 
 
     dict(
-        real_path='../laion400m_data/val.pickle',
-        fake_path='../FAKE_IMAGES/glide_100ddpm_27ddim/val.pickle',
-        data_mode='ours',
+        real_path='./diffusion_datasets/laion',
+        fake_path='./diffusion_datasets/glide_100_27',
+        data_mode='wang2020',
         key='glide_100_27'
     ),
 
 
     dict(
-        real_path='../laion400m_data/val.pickle',
-        fake_path='../FAKE_IMAGES/glide_50ddpm_27ddim/val.pickle',
-        data_mode='ours',
+        real_path='./diffusion_datasets/laion',
+        fake_path='./diffusion_datasets/glide_50_27',
+        data_mode='wang2020',
         key='glide_50_27'
     ),
 
 
     dict(
-        real_path='../laion400m_data/val.pickle',
-        fake_path='../FAKE_IMAGES/glide_100ddpm_10ddim/val.pickle',
-        data_mode='ours',
+        real_path='./diffusion_datasets/laion',
+        fake_path='./diffusion_datasets/glide_100_10',
+        data_mode='wang2020',
         key='glide_100_10'
     ),
 
 
     dict(
-        real_path='../laion400m_data/val.pickle',
-        fake_path='../FAKE_IMAGES/DALLE-MINI',
-        data_mode='ours',
+        real_path='./diffusion_datasets/laion',
+        fake_path='./diffusion_datasets/dalle',
+        data_mode='wang2020',
         key='dalle'
     ),
 
