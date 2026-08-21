@@ -1,8 +1,6 @@
-import functools
 import torch
 import torch.nn as nn
-from networks.base_model import BaseModel, init_weights
-import sys
+from networks.base_model import BaseModel
 from models import get_model
 
 class Trainer(BaseModel):
@@ -12,7 +10,7 @@ class Trainer(BaseModel):
     def __init__(self, opt):
         super(Trainer, self).__init__(opt)
         self.opt = opt  
-        self.model = get_model(opt.arch)
+        self.model = get_model(opt.arch, num_classes=opt.num_classes)
         torch.nn.init.normal_(self.model.fc.weight.data, 0.0, opt.init_gain)
 
         if opt.fix_backbone:
@@ -26,7 +24,20 @@ class Trainer(BaseModel):
             print("Your backbone is not fixed. Are you sure you want to proceed? If this is a mistake, enable the --fix_backbone command during training and rerun")
             import time 
             time.sleep(3)
-            params = self.model.parameters()
+            if opt.backbone_lr is not None:
+                fc_params = []
+                backbone_params = []
+                for name, p in self.model.named_parameters():
+                    if name == "fc.weight" or name == "fc.bias":
+                        fc_params.append(p)
+                    else:
+                        backbone_params.append(p)
+                params = [
+                    {"params": backbone_params, "lr": opt.backbone_lr},
+                    {"params": fc_params, "lr": opt.lr},
+                ]
+            else:
+                params = self.model.parameters()
 
         
 
@@ -37,9 +48,12 @@ class Trainer(BaseModel):
         else:
             raise ValueError("optim should be [adam, sgd]")
 
-        self.loss_fn = nn.BCEWithLogitsLoss()
+        if opt.num_classes == 1:
+            self.loss_fn = nn.BCEWithLogitsLoss()
+        else:
+            self.loss_fn = nn.CrossEntropyLoss()
 
-        self.model.to(opt.gpu_ids[0])
+        self.model.to(self.device)
 
 
     def adjust_learning_rate(self, min_lr=1e-6):
@@ -52,23 +66,27 @@ class Trainer(BaseModel):
 
     def set_input(self, input):
         self.input = input[0].to(self.device)
-        self.label = input[1].to(self.device).float()
+        if self.opt.num_classes == 1:
+            self.label = input[1].to(self.device).float()
+        else:
+            self.label = input[1].to(self.device).long()
 
 
     def forward(self):
         self.output = self.model(self.input)
-        self.output = self.output.view(-1).unsqueeze(1)
+        if self.opt.num_classes == 1:
+            self.output = self.output.view(-1).unsqueeze(1)
 
 
     def get_loss(self):
-        return self.loss_fn(self.output.squeeze(1), self.label)
+        if self.opt.num_classes == 1:
+            return self.loss_fn(self.output.squeeze(1), self.label)
+        return self.loss_fn(self.output, self.label)
 
     def optimize_parameters(self):
         self.forward()
-        self.loss = self.loss_fn(self.output.squeeze(1), self.label) 
+        self.loss = self.get_loss()
         self.optimizer.zero_grad()
         self.loss.backward()
         self.optimizer.step()
-
-
 

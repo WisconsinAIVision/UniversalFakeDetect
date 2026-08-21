@@ -7,10 +7,10 @@ from .datasets import RealFakeDataset
     
 
 def get_bal_sampler(dataset):
-    targets = []
-    for d in dataset.datasets:
-        targets.extend(d.targets)
+    if not hasattr(dataset, "targets"):
+        raise ValueError("Dataset must expose a targets attribute for --class_bal")
 
+    targets = np.array(dataset.targets)
     ratio = np.bincount(targets)
     w = 1. / torch.tensor(ratio, dtype=torch.float)
     sample_weights = w[targets]

@@ -5,7 +5,11 @@ import torch.nn as nn
 
 CHANNELS = {
     "RN50" : 1024,
-    "ViT-L/14" : 768
+    "RN101" : 512,
+    "ViT-B/32" : 512,
+    "ViT-B/16" : 512,
+    "ViT-L/14" : 768,
+    "ViT-L/14@336px" : 768,
 }
 
 class CLIPModel(nn.Module):
@@ -21,4 +25,3 @@ class CLIPModel(nn.Module):
         if return_feature:
             return features
         return self.fc(features)
-

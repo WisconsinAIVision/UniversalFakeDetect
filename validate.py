@@ -6,7 +6,13 @@ import torch
 import torchvision.transforms as transforms
 import torch.utils.data
 import numpy as np
-from sklearn.metrics import average_precision_score, precision_recall_curve, accuracy_score
+from sklearn.metrics import (
+    average_precision_score,
+    precision_recall_curve,
+    accuracy_score,
+    precision_recall_fscore_support,
+    confusion_matrix,
+)
 from torch.utils.data import Dataset
 import sys
 from models import get_model
@@ -129,6 +135,71 @@ def validate(model, loader, find_thres=False):
 
     
     
+def validate_multiclass(model, loader, class_names=None):
+    model.eval()
+    if class_names is None:
+        class_names = [str(i) for i in range(getattr(model.fc, "out_features", 0))]
+
+    num_classes = len(class_names)
+    device = next(model.parameters()).device
+
+    with torch.no_grad():
+        y_true, y_pred = [], []
+        print("Length of dataset: %d" % (len(loader)))
+        for img, label in loader:
+            logits = model(img.to(device))
+            pred = torch.argmax(logits, dim=1)
+            y_pred.extend(pred.cpu().tolist())
+            y_true.extend(label.cpu().tolist())
+
+    labels = list(range(num_classes))
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    per_precision, per_recall, per_f1, support = precision_recall_fscore_support(
+        y_true,
+        y_pred,
+        labels=labels,
+        zero_division=0,
+    )
+    macro_precision, macro_recall, macro_f1, _ = precision_recall_fscore_support(
+        y_true,
+        y_pred,
+        labels=labels,
+        average="macro",
+        zero_division=0,
+    )
+    weighted_precision, weighted_recall, weighted_f1, _ = precision_recall_fscore_support(
+        y_true,
+        y_pred,
+        labels=labels,
+        average="weighted",
+        zero_division=0,
+    )
+
+    matrix = confusion_matrix(y_true, y_pred, labels=labels)
+    per_class = {}
+    for idx, name in enumerate(class_names):
+        per_class[name] = {
+            "precision": float(per_precision[idx]),
+            "recall": float(per_recall[idx]),
+            "f1": float(per_f1[idx]),
+            "support": int(support[idx]),
+        }
+
+    return {
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "macro_precision": float(macro_precision),
+        "macro_recall": float(macro_recall),
+        "macro_f1": float(macro_f1),
+        "weighted_precision": float(weighted_precision),
+        "weighted_recall": float(weighted_recall),
+        "weighted_f1": float(weighted_f1),
+        "per_class": per_class,
+        "confusion_matrix": matrix.tolist(),
+    }
+
+
 
 
 
@@ -309,4 +380,3 @@ if __name__ == '__main__':
 
         with open( os.path.join(opt.result_folder,'acc0.txt'), 'a') as f:
             f.write(dataset_path['key']+': ' + str(round(r_acc0*100, 2))+'  '+str(round(f_acc0*100, 2))+'  '+str(round(acc0*100, 2))+'\n' )
-

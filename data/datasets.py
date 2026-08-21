@@ -11,6 +11,7 @@ from PIL import ImageFile
 from scipy.ndimage.filters import gaussian_filter
 import pickle
 import os 
+import csv
 from skimage.io import imread
 from copy import deepcopy
 
@@ -53,10 +54,14 @@ def get_list(path, must_contain=''):
 
 class RealFakeDataset(Dataset):
     def __init__(self, opt):
-        assert opt.data_label in ["train", "val"]
+        assert opt.data_label in ["train", "val", "test"]
         #assert opt.data_mode in ["ours", "wang2020", "ours_wang2020"]
         self.data_label  = opt.data_label
-        if opt.data_mode == 'ours':
+        self.samples = None
+        self.targets = None
+        if opt.data_mode == 'csv_multiclass':
+            self.samples, self.targets = self.read_csv_multiclass(opt)
+        elif opt.data_mode == 'ours':
             pickle_name = "train.pickle" if opt.data_label=="train" else "val.pickle"
             real_list = get_list( os.path.join(opt.real_list_path, pickle_name) )
             fake_list = get_list( os.path.join(opt.fake_list_path, pickle_name) )
@@ -74,15 +79,23 @@ class RealFakeDataset(Dataset):
 
 
 
-        # setting the labels for the dataset
-        self.labels_dict = {}
-        for i in real_list:
-            self.labels_dict[i] = 0
-        for i in fake_list:
-            self.labels_dict[i] = 1
+        if self.samples is None:
+            # setting the labels for the dataset
+            self.labels_dict = {}
+            for i in real_list:
+                self.labels_dict[i] = 0
+            for i in fake_list:
+                self.labels_dict[i] = 1
 
-        self.total_list = real_list + fake_list
-        shuffle(self.total_list)
+            self.total_list = real_list + fake_list
+            self.targets = [self.labels_dict[path] for path in self.total_list]
+            shuffle(self.total_list)
+            self.targets = [self.labels_dict[path] for path in self.total_list]
+        else:
+            shuffle(self.samples)
+            self.total_list = [path for path, _ in self.samples]
+            self.targets = [label for _, label in self.samples]
+            self.labels_dict = {path: label for path, label in self.samples}
         if opt.isTrain:
             crop_func = transforms.RandomCrop(opt.cropSize)
         elif opt.no_crop:
@@ -123,11 +136,60 @@ class RealFakeDataset(Dataset):
 
 
     def __getitem__(self, idx):
-        img_path = self.total_list[idx]
-        label = self.labels_dict[img_path]
+        if self.samples is None:
+            img_path = self.total_list[idx]
+            label = self.labels_dict[img_path]
+        else:
+            img_path, label = self.samples[idx]
         img = Image.open(img_path).convert("RGB")
         img = self.transform(img)
         return img, label
+
+    def read_csv_multiclass(self, opt):
+        csv_path = {
+            "train": opt.train_csv,
+            "val": opt.val_csv,
+            "test": opt.test_csv,
+        }[opt.data_label]
+
+        if not csv_path:
+            raise ValueError("csv_multiclass requires --%s_csv" % opt.data_label)
+        if not opt.data_root:
+            raise ValueError("csv_multiclass requires --data_root")
+        if not opt.class_names:
+            raise ValueError("csv_multiclass requires --class_names")
+
+        class_to_idx = {name: idx for idx, name in enumerate(opt.class_names)}
+        samples = []
+        targets = []
+
+        with open(csv_path, newline='') as f:
+            reader = csv.DictReader(f)
+            required_columns = {"image_path", "data_category"}
+            missing = required_columns - set(reader.fieldnames or [])
+            if missing:
+                raise ValueError("%s is missing required columns: %s" % (csv_path, sorted(missing)))
+
+            for row_number, row in enumerate(reader, start=2):
+                rel_path = row["image_path"].strip()
+                category = row["data_category"].strip()
+                if category not in class_to_idx:
+                    raise ValueError("Unknown data_category '%s' in %s:%d" % (category, csv_path, row_number))
+
+                image_path = rel_path if os.path.isabs(rel_path) else os.path.join(opt.data_root, rel_path)
+                label = class_to_idx[category]
+                samples.append((image_path, label))
+                targets.append(label)
+
+        if not samples:
+            raise ValueError("%s did not contain any samples" % csv_path)
+
+        class_counts = {name: 0 for name in opt.class_names}
+        for label in targets:
+            class_counts[opt.class_names[label]] += 1
+        print("csv_multiclass %s class counts: %s" % (opt.data_label, class_counts))
+
+        return samples, targets
 
 
 def data_augment(img, opt):

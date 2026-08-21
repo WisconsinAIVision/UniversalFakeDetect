@@ -25,9 +25,16 @@ class BaseOptions():
         parser.add_argument('--real_list_path', default=None, help='only used if data_mode==ours: path for the list of real images, which should contain train.pickle and val.pickle')
         parser.add_argument('--fake_list_path', default=None, help='only used if data_mode==ours: path for the list of fake images, which should contain train.pickle and val.pickle')
         parser.add_argument('--wang2020_data_path', default=None, help='only used if data_mode==wang2020 it should contain train and test folders')
-        parser.add_argument('--data_mode',  default='ours', help='wang2020 or ours')
+        parser.add_argument('--data_mode',  default='ours', help='wang2020, ours, ours_wang2020, or csv_multiclass')
         parser.add_argument('--data_label', default='train', help='label to decide whether train or validation dataset')
+        parser.add_argument('--data_root', default=None, help='root directory used with csv_multiclass image_path values')
+        parser.add_argument('--train_csv', default=None, help='csv_multiclass training CSV with image_path and data_category columns')
+        parser.add_argument('--val_csv', default=None, help='csv_multiclass validation CSV with image_path and data_category columns')
+        parser.add_argument('--test_csv', default=None, help='optional csv_multiclass test CSV with image_path and data_category columns')
+        parser.add_argument('--num_classes', type=int, default=1, help='number of output classes')
+        parser.add_argument('--class_names', default='', help='comma-separated class names in label-index order')
         parser.add_argument('--weight_decay', type=float, default=0.0, help='loss weight for l2 reg')
+        parser.add_argument('--backbone_lr', type=float, default=None, help='optional lower learning rate for full-backbone fine-tuning')
         
         parser.add_argument('--class_bal', action='store_true') # what is this ?
         parser.add_argument('--batch_size', type=int, default=256, help='input batch size')
@@ -103,7 +110,9 @@ class BaseOptions():
             torch.cuda.set_device(opt.gpu_ids[0])
 
         # additional
-        #opt.classes = opt.classes.split(',')
+        opt.class_names = [name.strip() for name in opt.class_names.split(',') if name.strip()]
+        if opt.class_names:
+            opt.num_classes = len(opt.class_names)
         opt.rz_interp = opt.rz_interp.split(',')
         opt.blur_sig = [float(s) for s in opt.blur_sig.split(',')]
         opt.jpg_method = opt.jpg_method.split(',')
