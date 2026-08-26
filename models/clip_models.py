@@ -12,7 +12,7 @@ class CLIPModel(nn.Module):
     def __init__(self, name, num_classes=1):
         super(CLIPModel, self).__init__()
 
-        self.model, self.preprocess = clip.load(name, device="cpu") # self.preprecess will not be used during training, which is handled in Dataset class 
+        self.model, self.preprocess = clip.load(name, device="cpu") # self.preprocess will not be used during training, which is handled in Dataset class 
         self.fc = nn.Linear( CHANNELS[name], num_classes )
  
 
